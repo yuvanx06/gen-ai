@@ -1,0 +1,8 @@
+numpy
+faiss-cpu
+gradio
+groq
+pypdf
+python-docx
+sentence-transformers
+torchvision
