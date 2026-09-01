@@ -1,0 +1,958 @@
+# ============================================================
+# MYAI - GOOGLE COLAB VERSION
+# No gr.Chatbot
+# No gr.ChatInterface
+# No ngrok
+# ============================================================
+
+!pip install -q groq gradio
+
+import gradio as gr
+from groq import Groq
+from getpass import getpass
+
+# ------------------------------------------------------------
+# GROQ
+# ------------------------------------------------------------
+
+api_key = getpass("Enter your NEW Groq API key: ")
+
+client = Groq(api_key=api_key)
+
+MODEL = "openai/gpt-oss-20b"
+
+
+# ------------------------------------------------------------
+# AI FUNCTION
+# ------------------------------------------------------------
+
+def ask_ai(message):
+
+    if not message or not message.strip():
+        return "Please enter a message."
+
+    try:
+
+        response = client.chat.completions.create(
+
+            model=MODEL,
+
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+You are MyAI, a helpful personal AI assistant.
+
+Help with:
+Python
+Java
+C
+C++
+HTML
+CSS
+JavaScript
+Artificial Intelligence
+Machine Learning
+Big Data
+Data Structures
+College projects
+Programming problems
+General questions
+
+Give clear explanations.
+
+When asked for code, provide complete
+working code and explain it clearly.
+"""
+                },
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ],
+
+            temperature=0.7,
+
+            max_tokens=4096
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+
+        return "ERROR: " + str(e)
+
+
+# ------------------------------------------------------------
+# CUSTOM HTML GUI
+# ------------------------------------------------------------
+
+html = """
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    font-family:
+    Arial,
+    sans-serif;
+
+    background: #080b12;
+
+    color: white;
+
+}
+
+.app {
+
+    height: 700px;
+
+    display: flex;
+
+    background: #080b12;
+
+}
+
+
+/* SIDEBAR */
+
+.sidebar {
+
+    width: 230px;
+
+    background: #0d111b;
+
+    border-right: 1px solid #222938;
+
+    padding: 20px;
+
+}
+
+.logo {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    margin-bottom: 30px;
+
+}
+
+.logo-icon {
+
+    width: 40px;
+
+    height: 40px;
+
+    border-radius: 12px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background:
+    linear-gradient(
+        135deg,
+        #6366f1,
+        #8b5cf6
+    );
+
+}
+
+.newchat {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    border: 1px solid #293143;
+
+    background: #151b28;
+
+    color: white;
+
+    cursor: pointer;
+
+}
+
+.newchat:hover {
+
+    background: #1c2432;
+
+}
+
+.menu {
+
+    margin-top: 30px;
+
+}
+
+.menu-title {
+
+    color: #596276;
+
+    font-size: 10px;
+
+    margin-bottom: 10px;
+
+}
+
+.menu-item {
+
+    padding: 12px;
+
+    color: #8c95a8;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+}
+
+.menu-item:hover {
+
+    background: #151b28;
+
+    color: white;
+
+}
+
+
+/* MAIN */
+
+.main {
+
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+/* HEADER */
+
+.header {
+
+    height: 65px;
+
+    border-bottom: 1px solid #222938;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 25px;
+
+}
+
+.header-title {
+
+    font-weight: bold;
+
+}
+
+.model {
+
+    font-size: 10px;
+
+    padding: 7px 12px;
+
+    border-radius: 8px;
+
+    background: #111722;
+
+    color: #858ea1;
+
+}
+
+
+/* CHAT */
+
+.chat {
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 35px;
+
+}
+
+
+/* WELCOME */
+
+.welcome {
+
+    height: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+.welcome-icon {
+
+    width: 70px;
+
+    height: 70px;
+
+    border-radius: 22px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 30px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #6366f1,
+        #8b5cf6
+    );
+
+    margin-bottom: 20px;
+
+}
+
+.welcome h1 {
+
+    margin: 0;
+
+    font-size: 30px;
+
+}
+
+.welcome p {
+
+    color: #697387;
+
+}
+
+
+/* SUGGESTIONS */
+
+.cards {
+
+    display: grid;
+
+    grid-template-columns:
+    repeat(2, 250px);
+
+    gap: 12px;
+
+    margin-top: 25px;
+
+}
+
+.card {
+
+    padding: 18px;
+
+    text-align: left;
+
+    border-radius: 12px;
+
+    border: 1px solid #222c3b;
+
+    background: #101620;
+
+    cursor: pointer;
+
+}
+
+.card:hover {
+
+    background: #151d2a;
+
+    border-color: #4c54d8;
+
+}
+
+.card-icon {
+
+    font-size: 20px;
+
+}
+
+.card-title {
+
+    margin-top: 8px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+}
+
+.card-text {
+
+    margin-top: 5px;
+
+    font-size: 10px;
+
+    color: #697387;
+
+}
+
+
+/* MESSAGES */
+
+.message {
+
+    max-width: 800px;
+
+    margin: auto;
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-bottom: 25px;
+
+}
+
+.avatar {
+
+    width: 35px;
+
+    height: 35px;
+
+    min-width: 35px;
+
+    border-radius: 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #252e40;
+
+}
+
+.ai {
+
+    background:
+    linear-gradient(
+        135deg,
+        #6366f1,
+        #8b5cf6
+    );
+
+}
+
+.message-content {
+
+    flex: 1;
+
+}
+
+.name {
+
+    font-size: 10px;
+
+    color: #737d91;
+
+    margin-bottom: 5px;
+
+}
+
+.text {
+
+    white-space: pre-wrap;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+
+    color: #dce0e8;
+
+}
+
+
+/* MOBILE */
+
+@media(max-width:700px) {
+
+    .sidebar {
+
+        display: none;
+
+    }
+
+    .cards {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .chat {
+
+        padding: 20px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            ✦
+        </div>
+
+        <div>
+            MyAI
+        </div>
+
+    </div>
+
+
+    <button
+        class="newchat"
+        onclick="newChat()">
+
+        ＋ New Chat
+
+    </button>
+
+
+    <div class="menu">
+
+        <div class="menu-title">
+            WORKSPACE
+        </div>
+
+        <div class="menu-item">
+            💬 Chat
+        </div>
+
+        <div class="menu-item">
+            💻 Programming
+        </div>
+
+        <div class="menu-item">
+            🧠 Learning
+        </div>
+
+        <div class="menu-item">
+            🚀 Projects
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- MAIN -->
+
+<div class="main">
+
+
+<div class="header">
+
+    <div>
+
+        <div class="header-title">
+            MyAI
+        </div>
+
+    </div>
+
+    <div class="model">
+        GPT-OSS-20B
+    </div>
+
+</div>
+
+
+<!-- CHAT -->
+
+<div
+    id="chat"
+    class="chat">
+
+
+<div
+    id="welcome"
+    class="welcome">
+
+
+<div class="welcome-icon">
+    ✦
+</div>
+
+
+<h1>
+    How can I help?
+</h1>
+
+
+<p>
+    Ask me anything, write code,
+    or work on your project.
+</p>
+
+
+<div class="cards">
+
+
+<div
+class="card"
+onclick="usePrompt('Explain Python to me')">
+
+<div class="card-icon">
+🐍
+</div>
+
+<div class="card-title">
+Learn Python
+</div>
+
+<div class="card-text">
+Learn Python step by step
+</div>
+
+</div>
+
+
+<div
+class="card"
+onclick="usePrompt('Help me build a college project')">
+
+<div class="card-icon">
+🚀
+</div>
+
+<div class="card-title">
+Build a Project
+</div>
+
+<div class="card-text">
+Create your college project
+</div>
+
+</div>
+
+
+<div
+class="card"
+onclick="usePrompt('Explain artificial intelligence simply')">
+
+<div class="card-icon">
+🧠
+</div>
+
+<div class="card-title">
+Learn AI
+</div>
+
+<div class="card-text">
+Understand AI easily
+</div>
+
+</div>
+
+
+<div
+class="card"
+onclick="usePrompt('Debug this Java code')">
+
+<div class="card-icon">
+☕
+</div>
+
+<div class="card-title">
+Debug Java
+</div>
+
+<div class="card-text">
+Find and fix Java errors
+</div>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<!-- HIDDEN GRADIO COMPONENT -->
+
+<div id="backend"></div>
+
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+function usePrompt(text) {
+
+    const box =
+        document.querySelector(
+            "textarea"
+        );
+
+    if (box) {
+
+        box.value = text;
+
+        box.focus();
+
+    }
+
+}
+
+
+function addMessage(
+    text,
+    isUser
+) {
+
+
+    const welcome =
+        document.getElementById(
+            "welcome"
+        );
+
+
+    if (welcome) {
+
+        welcome.remove();
+
+    }
+
+
+    const message =
+        document.createElement(
+            "div"
+        );
+
+
+    message.className =
+        "message";
+
+
+    const avatar =
+        document.createElement(
+            "div"
+        );
+
+
+    avatar.className =
+        "avatar " +
+        (isUser ? "" : "ai");
+
+
+    avatar.innerText =
+        isUser ? "U" : "✦";
+
+
+    const content =
+        document.createElement(
+            "div"
+        );
+
+
+    content.className =
+        "message-content";
+
+
+    const name =
+        document.createElement(
+            "div"
+        );
+
+
+    name.className =
+        "name";
+
+
+    name.innerText =
+        isUser ? "You" : "MyAI";
+
+
+    const textDiv =
+        document.createElement(
+            "div"
+        );
+
+
+    textDiv.className =
+        "text";
+
+
+    textDiv.innerText =
+        text;
+
+
+    content.appendChild(name);
+
+    content.appendChild(textDiv);
+
+    message.appendChild(avatar);
+
+    message.appendChild(content);
+
+
+    document
+        .getElementById("chat")
+        .appendChild(message);
+
+
+    const chat =
+        document.getElementById(
+            "chat"
+        );
+
+    chat.scrollTop =
+        chat.scrollHeight;
+
+}
+
+
+function newChat() {
+
+    const chat =
+        document.getElementById(
+            "chat"
+        );
+
+    chat.innerHTML = `
+
+        <div
+        id="welcome"
+        class="welcome">
+
+            <div class="welcome-icon">
+                ✦
+            </div>
+
+            <h1>
+                How can I help?
+            </h1>
+
+            <p>
+                Ask me anything,
+                write code,
+                or work on your project.
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
+"""
+
+
+# ------------------------------------------------------------
+# SIMPLE GRADIO BACKEND
+# ------------------------------------------------------------
+
+with gr.Blocks() as demo:
+
+    gr.Markdown(
+        "# MyAI"
+    )
+
+    textbox = gr.Textbox(
+        label="Message"
+    )
+
+    output = gr.Textbox(
+        label="AI Response"
+    )
+
+    button = gr.Button(
+        "Send"
+    )
+
+    button.click(
+        fn=ask_ai,
+        inputs=textbox,
+        outputs=output
+    )
+
+    textbox.submit(
+        fn=ask_ai,
+        inputs=textbox,
+        outputs=output
+    )
+
+
+demo.launch(
+    share=True,
+    debug=True
+)
